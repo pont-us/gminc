@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+# -*- mode: python -*-
+
+"""gminc: convert between latitude and geomagnetic inclination
+
+The conversions use the formula tan I = 2 tan λ derived from the
+geocentric axial model.
+
+By Pontus Lurcock, 2016. Released into the public domain.
+"""
+
+from math import tan, atan, radians, degrees
+import sys
+import argparse
+
+def inc_deg(lat_deg):
+    lat_rad = radians(float(lat_deg))
+    inc_rad = atan(2 * tan(lat_rad))
+    inc_deg = degrees(inc_rad)
+    return str(inc_deg)
+
+def lat_deg(inc_deg):
+    inc_rad = radians(float(inc_deg))
+    lat_rad = atan(tan(inc_rad) / 2)
+    lat_deg = degrees(lat_rad)
+    return str(lat_deg)
+
+def main():
+    parser = argparse.ArgumentParser(description =
+        "Convert between latitude and geomagnetic inclination.")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-l', "--latitude", action="store_true",
+                       default=False,
+                       help="Calculate latitude from inclination")
+    group.add_argument('-i', "--inclination", action="store_true",
+                       default=True,
+                       help="Calculate inclination from latitude (default)")
+    parser.add_argument("input_value", metavar = "angle",
+                        type = str, nargs = 1,
+                        help="input angle in degrees (inclination or latitude)")
+    args = parser.parse_args()
+
+    if args.latitude:
+        print(lat_deg(args.input_value[0]))
+    else:
+        print(inc_deg(args.input_value[0]))
+
+if __name__ == "__main__":
+    main()
