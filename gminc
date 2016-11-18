@@ -9,21 +9,37 @@ geocentric axial model.
 By Pontus Lurcock, 2016. Released into the public domain.
 """
 
-from math import tan, atan, radians, degrees
+from math import tan, atan, radians, degrees, copysign
 import sys
 import argparse
+import re
 
 def inc_deg(lat_deg):
-    lat_rad = radians(float(lat_deg))
+    lat_rad = radians(lat_deg)
     inc_rad = atan(2 * tan(lat_rad))
     inc_deg = degrees(inc_rad)
     return str(inc_deg)
 
 def lat_deg(inc_deg):
-    inc_rad = radians(float(inc_deg))
+    inc_rad = radians(inc_deg)
     lat_rad = atan(tan(inc_rad) / 2)
     lat_deg = degrees(lat_rad)
     return str(lat_deg)
+
+def dms_to_float(dms_string):
+    # TODO support for N/S suffixes
+    parts = tuple(filter(lambda x: x != "",
+                         re.split(r"[^0-9.-]+", dms_string)))
+    degs = float(parts[0])
+    mins = copysign(float(parts[1]), degs) if len(parts)>1 else 0
+    secs = copysign(float(parts[2]), degs) if len(parts)>2 else 0
+    return degs + mins/60. + secs/3600.
+
+def parse_degrees(degs, dms):
+    if dms:
+        return dms_to_float(degs)
+    else:
+        return float(degs)
 
 def main():
     parser = argparse.ArgumentParser(description =
@@ -35,15 +51,20 @@ def main():
     group.add_argument('-i', "--inclination", action="store_true",
                        default=True,
                        help="Calculate inclination from latitude (default)")
+    group.add_argument('-d', "--dms", action="store_true",
+                       default=False,
+                       help="Latitude as degrees/minutes/seconds (default: decimal degrees)")
     parser.add_argument("input_value", metavar = "angle",
                         type = str, nargs = 1,
                         help="input angle in degrees (inclination or latitude)")
     args = parser.parse_args()
 
+    # TODO proper format specifier to limit significant figures
     if args.latitude:
-        print(lat_deg(args.input_value[0]))
+        # TODO: should print in DMS if -d flag specified
+        print(lat_deg(float(args.input_value[0])))
     else:
-        print(inc_deg(args.input_value[0]))
+        print(inc_deg(parse_degrees(args.input_value[0], args.dms)))
 
 if __name__ == "__main__":
     main()
