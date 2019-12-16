@@ -51,7 +51,7 @@ def main():
     group.add_argument('-i', "--inclination", action="store_true",
                        default=True,
                        help="Calculate inclination from latitude (default)")
-    group.add_argument('-d', "--dms", action="store_true",
+    parser.add_argument('-d', "--dms", action="store_true",
                        default=False,
                        help="Latitude as degrees/minutes/seconds (default: decimal degrees)")
     parser.add_argument("input_value", metavar = "angle",
